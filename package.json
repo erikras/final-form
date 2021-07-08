@@ -93,11 +93,11 @@
   "bundlesize": [
     {
       "path": "dist/final-form.umd.min.js",
-      "maxSize": "5.3kB"
+      "maxSize": "5.4kB"
     },
     {
       "path": "dist/final-form.es.js",
-      "maxSize": "9.3kB"
+      "maxSize": "9.4kB"
     },
     {
       "path": "dist/final-form.cjs.js",

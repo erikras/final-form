@@ -222,6 +222,53 @@ describe('FinalForm.submission', () => {
     })
   })
 
+
+  it('should reset the modifiedSinceLastSubmit flag after submitting with errors', () => {
+    const onSubmit = jest.fn()
+    const validate = (values, form, callback) => {
+      const errors = {}
+      if (values.foo === 'bar') {
+        errors.foo = 'Sorry, "bar" is an illegal value'
+      }
+      return errors;
+    }
+    const form = createForm({ onSubmit, validate })
+    const spy = jest.fn()
+    expect(spy).not.toHaveBeenCalled()
+    spy.iAmTheSpySubscriber = true;
+    form.subscribe(spy, {
+      modifiedSinceLastSubmit: true,
+    })
+    form.registerField('foo', () => {})
+
+    expect(spy).toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith({
+      modifiedSinceLastSubmit: false
+    })
+
+    form.change('foo', 'baz')
+
+    form.submit()
+
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+    expect(onSubmit.mock.calls[0][0]).toEqual({ foo: 'baz' })
+
+    form.change('foo', 'bar')
+
+    expect(spy).toHaveBeenCalledTimes(2)
+    expect(spy).toHaveBeenCalledWith({
+      modifiedSinceLastSubmit: true 
+    })
+
+    form.submit()
+
+    expect(spy).toHaveBeenCalledTimes(3)
+    expect(spy).toHaveBeenCalledWith({
+      modifiedSinceLastSubmit: false 
+    })
+  })
+
   it('should support asynchronous submission with errors via callback', async () => {
     const onSubmit = jest.fn((values, form, callback) => {
       setTimeout(() => {

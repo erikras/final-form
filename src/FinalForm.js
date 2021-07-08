@@ -1078,6 +1078,7 @@ function createForm<FormValues: FormValuesShape>(
 
       if (hasSyncErrors()) {
         markAllFieldsTouched()
+        resetModifiedAfterSubmit();
         state.formState.submitFailed = true
         notifyFormListeners()
         notifyFieldListeners()
