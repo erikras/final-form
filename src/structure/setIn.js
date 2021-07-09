@@ -59,6 +59,12 @@ const setInRecursor = (
           return undefined
         }
       }
+
+      if (typeof current === 'string') {
+        // no need to remove properties, since strings cannot have custom properties anyways
+        return current
+      }
+
       const { [key]: _removed, ...final } = current
       return final
     }
