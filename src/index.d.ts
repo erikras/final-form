@@ -128,12 +128,12 @@ export type Subscribers<T extends Object> = {
 
 export type Unsubscribe = () => void
 
-type FieldValidator<FieldValue> = (
+export type FieldValidator<FieldValue> = (
   value: FieldValue,
-  allValues: object,
+  allValues?: object,
   meta?: FieldState<FieldValue>
 ) => any | Promise<any>
-type GetFieldValidator<FieldValue> = () =>
+export type GetFieldValidator<FieldValue> = () =>
   | FieldValidator<FieldValue>
   | undefined
 
