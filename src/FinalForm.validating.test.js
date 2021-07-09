@@ -511,63 +511,6 @@ describe('Field.validation', () => {
     expect(spy.mock.calls[5][0].validating).toBe(false)
   })
 
-  it('should update validating flag during and after async field-level validation without focus', async () => {
-    const delay = 2
-    const form = createForm({ onSubmit: onSubmitMock })
-    const spy = jest.fn()
-    form.registerField(
-      'username',
-      spy,
-      { error: true, validating: true },
-      {
-        getValidator: () => async (value, allErrors) => {
-          const error = value === 'erikras' ? 'Username taken' : undefined
-          await sleep(delay)
-          return error
-        },
-        subscribeToEachFieldsPromise: true
-      }
-    )
-    expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy.mock.calls[0][0].error).toBeUndefined()
-    expect(spy.mock.calls[0][0].validating).toBe(true)
-
-    const { change, blur } = spy.mock.calls[0][0]
-
-    await sleep(delay * 2)
-
-    // called after promised resolved
-    expect(spy).toHaveBeenCalledTimes(2)
-    expect(spy.mock.calls[1][0].error).toBeUndefined()
-    expect(spy.mock.calls[1][0].validating).toBe(false)
-
-    change('something')
-    blur()
-
-    expect(spy).toHaveBeenCalledTimes(3)
-    expect(spy.mock.calls[2][0].error).toBeUndefined()
-    expect(spy.mock.calls[2][0].validating).toBe(true)
-
-    await sleep(delay * 2)
-
-    expect(spy).toHaveBeenCalledTimes(4)
-    expect(spy.mock.calls[3][0].error).toBeUndefined()
-    expect(spy.mock.calls[3][0].validating).toBe(false)
-
-    change('erikras')
-    blur()
-
-    expect(spy).toHaveBeenCalledTimes(5)
-    expect(spy.mock.calls[4][0].error).toBeUndefined()
-    expect(spy.mock.calls[4][0].validating).toBe(true)
-
-    await sleep(delay * 2)
-
-    expect(spy).toHaveBeenCalledTimes(6)
-    expect(spy.mock.calls[5][0].error).toBe('Username taken')
-    expect(spy.mock.calls[5][0].validating).toBe(false)
-  })
-
   it('should allow field-level async validation via promise', async () => {
     const delay = 2
     const form = createForm({ onSubmit: onSubmitMock })
