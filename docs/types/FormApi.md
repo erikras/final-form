@@ -160,10 +160,10 @@ Resets all of a field's flags (e.g. `touched`, `visited`, etc.) to their initial
 ## `restart`
 
 ```ts
-() => void
+(initialValues: ?InitialFormValues) => void
 ```
 
-Resets all form and field state. Same as calling `reset()` on the form and `resetFieldState()` for each field. Form should be just as it was when it was first created.
+Resets all form and field state. Same as calling `reset(initialValues)` on the form and `resetFieldState()` for each field. Form should be just as it was when it was first created.
 
 ## `resumeValidation`
 
