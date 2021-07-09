@@ -122,7 +122,7 @@ export type Subscribers<T extends Object> = {
       subscriber: Subscriber<T>
       subscription: Subscription
       notified: boolean
-    }
+    } | void
   }
 }
 
@@ -228,6 +228,11 @@ export interface FormApi<FormValues = Record<string, any>, InitialFormValues = P
   subscribe: (
     subscriber: FormSubscriber<FormValues>,
     subscription: FormSubscription
+  ) => Unsubscribe
+  subscribeToExistingField: (
+    name: string,
+    subscriber: FieldSubscriber<any>,
+    subscription: FieldSubscription
   ) => Unsubscribe
 }
 

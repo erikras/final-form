@@ -888,4 +888,63 @@ describe('Field.subscribing', () => {
     expect(name1).toHaveBeenCalledTimes(1)
     expect(name2).toHaveBeenCalledTimes(1)
   })
+
+  it('should subscribe and unsubscribe to field state', () => {
+    const form = createForm({ onSubmit: onSubmitMock })
+    const foo = jest.fn()
+
+    form.registerField('foo')
+    const unsubscribe = form.subscribeToFieldState('foo', foo, {
+      touched: true,
+      value: true,
+      visited: true
+    })
+
+    expect(foo).not.toHaveBeenCalled()
+
+    form.change('foo', 'new value')
+
+    expect(foo).toHaveBeenCalledTimes(1)
+    expect(foo.mock.calls[0][0].value).toBe('new value')
+
+    form.focus('foo')
+    expect(foo).toHaveBeenCalledTimes(2)
+    expect(foo.mock.calls[1][0].touched).toBe(false)
+    expect(foo.mock.calls[1][0].visited).toBe(true)
+
+    form.blur('foo')
+    expect(foo).toHaveBeenCalledTimes(3)
+    expect(foo.mock.calls[2][0].touched).toBe(true)
+    expect(foo.mock.calls[2][0].visited).toBe(true)
+
+    unsubscribe()
+    form.change('foo', 'newer value')
+    form.focus('foo')
+    form.blur('foo')
+    expect(foo).toHaveBeenCalledTimes(3)
+  })
+
+  it('should subscribe and unsubscribe to field state with only value subscription', () => {
+    const form = createForm({ onSubmit: onSubmitMock })
+    const foo = jest.fn()
+
+    form.registerField('foo')
+    const unsubscribe = form.subscribeToFieldState('foo', foo, { value: true })
+
+    expect(foo).not.toHaveBeenCalled()
+
+    form.change('foo', 'new value')
+
+    expect(foo).toHaveBeenCalledTimes(1)
+    expect(foo.mock.calls[0][0].value).toBe('new value')
+
+    form.focus('foo')
+    expect(foo).toHaveBeenCalledTimes(1)
+    form.blur('foo')
+    expect(foo).toHaveBeenCalledTimes(1)
+
+    unsubscribe()
+    form.change('foo', 'newer value')
+    expect(foo).toHaveBeenCalledTimes(1)
+  })
 })

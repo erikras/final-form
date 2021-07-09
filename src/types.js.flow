@@ -120,7 +120,7 @@ export type FieldSubscriber = Subscriber<FieldState>
 export type Subscribers<T: Object> = {
   index: number,
   entries: {
-    [number]: {
+    [number]: ?{
       subscriber: Subscriber<T>,
       subscription: Subscription,
       notified: boolean
@@ -151,8 +151,8 @@ export type FieldConfig = {
 
 export type RegisterField = (
   name: string,
-  subscriber: FieldSubscriber,
-  subscription: FieldSubscription,
+  subscriber?: FieldSubscriber,
+  subscription?: FieldSubscription,
   config?: FieldConfig
 ) => Unsubscribe
 
@@ -233,6 +233,11 @@ export type FormApi<FormValues: FormValuesShape> = {
   subscribe: (
     subscriber: FormSubscriber<FormValues>,
     subscription: FormSubscription
+  ) => Unsubscribe,
+  subscribeToFieldState: (
+    name: string,
+    subscriber: FieldSubscriber,
+    subscription: FieldSubscription
   ) => Unsubscribe
 }
 
