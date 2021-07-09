@@ -379,10 +379,14 @@ function createForm<FormValues: FormValuesShape>(
     let recordLevelErrors: Object = {}
     const fieldLevelErrors = {}
 
-    const promises = [
-      ...runRecordLevelValidation(errors => {
+    const recordLevelValidationPromises = runRecordLevelValidation(
+      (errors) => {
         recordLevelErrors = errors || {}
-      }),
+      }
+    )
+
+    const promises = [
+      ...recordLevelValidationPromises,
       ...fieldKeys.reduce(
         (result, name) =>
           result.concat(
@@ -405,7 +409,7 @@ function createForm<FormValues: FormValuesShape>(
       asyncValidationPromises[asyncValidationPromiseKey] = promise
     }
 
-    const processErrors = () => {
+    const processErrors = (isAsyncProcess = false) => {
       let merged = {
         ...(limitedFieldLevelValidation ? formState.errors : {}),
         ...recordLevelErrors
@@ -413,21 +417,27 @@ function createForm<FormValues: FormValuesShape>(
       const forEachError = (fn: (name: string, error: any) => void) => {
         fieldKeys.forEach(name => {
           if (fields[name]) {
-            // make sure field is still registered
-            // field-level errors take precedent over record-level errors
-            const recordLevelError = getIn(recordLevelErrors, name)
-            const errorFromParent = getIn(merged, name)
             const hasFieldLevelValidation = getValidators(safeFields[name])
               .length
-            const fieldLevelError = fieldLevelErrors[name]
-            fn(
-              name,
-              (hasFieldLevelValidation && fieldLevelError) ||
-                (validate && recordLevelError) ||
-                (!recordLevelError && !limitedFieldLevelValidation
-                  ? errorFromParent
-                  : undefined)
-            )
+
+            // if not has field level validation, validate is async and current processing is for sync errors - return current error
+            if (!hasFieldLevelValidation && !isAsyncProcess && recordLevelValidationPromises.length) {
+              fn(name, getIn(formState.errors, name))
+            } else {
+              // make sure field is still registered
+              // field-level errors take precedent over record-level errors
+              const recordLevelError = getIn(recordLevelErrors, name)
+              const errorFromParent = getIn(merged, name)
+              const fieldLevelError = fieldLevelErrors[name]
+              fn(
+                name,
+                (hasFieldLevelValidation && fieldLevelError) ||
+                  (validate && recordLevelError) ||
+                  (!recordLevelError && !limitedFieldLevelValidation
+                    ? errorFromParent
+                    : undefined)
+              )
+            }
           }
         })
       }
@@ -469,7 +479,7 @@ function createForm<FormValues: FormValuesShape>(
             return
           }
 
-          processErrors()
+          processErrors(true)
         })
         .then(afterPromise, afterPromise)
     }

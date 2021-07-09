@@ -393,15 +393,59 @@ describe('Field.validation', () => {
 
     change('another')
 
-    // spy called because sync validation passed
-    expect(spy).toHaveBeenCalledTimes(3)
-    expect(spy.mock.calls[2][0].error).toBeUndefined()
+    // still has error because async validation still running
+    expect(spy).toHaveBeenCalledTimes(2)
+    expect(spy.mock.calls[1][0].error).toBe('Username taken')
 
     // wait for validation to return
     await sleep(delay * 2)
 
     // spy not called because sync validation already cleared error
     expect(spy).toHaveBeenCalledTimes(3)
+    expect(spy.mock.calls[2][0].error).toBeUndefined()
+  })
+
+  it('async validate should wait for result - not set error to undefined via sync validation', async () => {
+    const delay = 2
+    const form = createForm({
+      onSubmit: onSubmitMock,
+      validate: async (values) => {
+        const errors = {}
+        if (!values.username) {
+          errors.username = 'Required'
+        }
+        await sleep(delay)
+        return errors
+      }
+    })
+    const spyValidatedField = jest.fn()
+    const spy = jest.fn()
+    form.registerField('username', spyValidatedField, { error: true })
+    form.registerField('age', spy)
+
+    const { change } = spy.mock.calls[0][0]
+
+    expect(spyValidatedField).toHaveBeenCalledTimes(1)
+    expect(spyValidatedField.mock.calls[0][0].error).toBeUndefined()
+
+    change('20')
+
+    await sleep(delay * 2)
+
+    expect(spyValidatedField).toHaveBeenCalledTimes(2)
+    expect(spyValidatedField.mock.calls[1][0].error).toBe('Required')
+
+    change('40')
+
+    // should not be called - async validation is still running
+    expect(spyValidatedField).toHaveBeenCalledTimes(2)
+    expect(spyValidatedField.mock.calls[1][0].error).toBe('Required')
+
+    await sleep(delay * 2)
+
+    // should not be called - validation return same errors like earlier
+    expect(spyValidatedField).toHaveBeenCalledTimes(2)
+    expect(spyValidatedField.mock.calls[1][0].error).toBe('Required')
   })
 
   it('should ignore old validation promise results', async () => {
